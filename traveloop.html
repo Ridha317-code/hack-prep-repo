@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traveloop – Personalized Travel Planning</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1a9e8f;
+    --teal-light: #e0f5f3;
+    --teal-dark: #0d6e65;
+    --sand: #f7f3ec;
+    --sand-dark: #ede7da;
+    --coral: #e8613c;
+    --coral-light: #fdeee9;
+    --text: #1a1a18;
+    --text-muted: #6b6b63;
+    --text-light: #9a9a90;
+    --white: #ffffff;
+    --border: rgba(26,26,24,0.1);
+    --border-medium: rgba(26,26,24,0.18);
+    --radius: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--sand);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ─── AUTH SCREENS ─── */
+  .auth-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+  .auth-panel {
+    width: 45%;
+    background: linear-gradient(160deg, var(--teal-dark) 0%, #0a4f48 50%, #07332e 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-panel::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .auth-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .auth-brand { position: relative; z-index: 1; }
+  .auth-brand h1 {
+    font-family: var(--font-display);
+    font-size: 36px;
+    color: white;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .auth-brand span { color: rgba(255,255,255,0.5); font-family: var(--font-body); font-size: 14px; font-weight: 300; display: block; margin-top: 4px; }
+  .auth-tagline { position: relative; z-index: 1; }
+  .auth-tagline p {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.3;
+    font-weight: 400;
+  }
+  .auth-tagline small { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 12px; display: block; }
+  .auth-form-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: var(--sand);
+  }
+  .auth-form-box { width: 100%; max-width: 380px; }
+  .auth-form-box h2 { font-family: var(--font-display); font-size: 28px; margin-bottom: 8px; color: var(--text); }
+  .auth-form-box .subtitle { color: var(--text-muted); margin-bottom: 32px; font-size: 14px; }
+
+  label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); letter-spacing: 0.3px; }
+  input[type="text"], input[type="email"], input[type="password"], input[type="date"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border-medium);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 14px;
+    background: var(--white);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--teal); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--teal);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border-medium);
+  }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { color: var(--text); background: var(--sand-dark); }
+  .btn-coral { background: var(--coral); color: white; }
+  .btn-coral:hover { background: #c4502f; }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 8px 16px; font-size: 13px; }
+  .btn-icon { padding: 8px; border-radius: 8px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { margin-bottom: 4px; }
+
+  .link { color: var(--teal); text-decoration: none; font-weight: 500; }
+  .link:hover { color: var(--teal-dark); text-decoration: underline; }
+
+  .auth-switch { text-align: center; margin-top: 24px; font-size: 14px; color: var(--text-muted); }
+  .divider { display: flex; align-items: center; gap: 16px; margin: 20px 0; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-size: 12px; color: var(--text-light); }
+
+  /* ─── TOP NAV ─── */
+  .nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    cursor: pointer;
+  }
+  .nav-brand span { color: var(--coral); }
+  .nav-links { display: flex; align-items: center; gap: 4px; }
+  .nav-link {
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .nav-link:hover, .nav-link.active { color: var(--text); background: var(--sand); }
+  .nav-link.active { font-weight: 500; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ─── PAGE LAYOUT ─── */
+  .page-content { flex: 1; padding: 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 { font-family: var(--font-display); font-size: 26px; color: var(--text); }
+  .page-header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+  .card-sm { padding: 16px; border-radius: var(--radius); }
+
+  /* ─── DASHBOARD ─── */
+  .dash-hero {
+    background: linear-gradient(135deg, var(--teal-dark) 0%, #0f6e65 60%, #1a9e8f 100%);
+    border-radius: var(--radius-xl);
+    padding: 36px 40px;
+    color: white;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dash-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: 60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .dash-hero h2 { font-family: var(--font-display); font-size: 30px; margin-bottom: 6px; position: relative; }
+  .dash-hero p { opacity: 0.75; font-size: 14px; position: relative; }
+  .dash-hero-actions { margin-top: 20px; display: flex; gap: 10px; position: relative; }
+  .btn-white { background: white; color: var(--teal-dark); }
+  .btn-white:hover { background: var(--sand); }
+  .btn-ghost-white { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-ghost-white:hover { background: rgba(255,255,255,0.25); }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .stat-val { font-size: 28px; font-weight: 600; color: var(--text); font-family: var(--font-display); }
+  .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 6px; }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  .trip-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .trip-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .trip-card-thumb {
+    height: 120px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+  }
+  .trip-card-thumb.coral { background: linear-gradient(135deg, #e8613c 0%, #c04828 100%); }
+  .trip-card-thumb.purple { background: linear-gradient(135deg, #7c5cbf 0%, #5840a0 100%); }
+  .trip-card-thumb.amber { background: linear-gradient(135deg, #d4880e 0%, #a06a08 100%); }
+  .trip-card-badge { background: rgba(255,255,255,0.2); color: white; font-size: 11px; padding: 3px 8px; border-radius: 20px; backdrop-filter: blur(4px); }
+  .trip-card-body { padding: 14px 16px; }
+  .trip-card-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .trip-card-body p { font-size: 12px; color: var(--text-muted); }
+  .trip-card-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .trip-meta { font-size: 12px; color: var(--text-muted); }
+  .trips-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  .dest-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .dest-card {
+    border-radius: var(--radius);
+    padding: 14px;
+    background: var(--sand);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .dest-card:hover { border-color: var(--teal); background: var(--teal-light); }
+  .dest-icon { font-size: 22px; margin-bottom: 6px; }
+  .dest-card h5 { font-size: 13px; font-weight: 600; }
+  .dest-card span { font-size: 11px; color: var(--text-muted); }
+
+  /* ─── ITINERARY BUILDER ─── */
+  .builder-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+  .stop-list { display: flex; flex-direction: column; gap: 8px; }
+  .stop-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .stop-item:hover, .stop-item.active { border-color: var(--teal); background: var(--teal-light); }
+  .stop-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .stop-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .stop-info p { font-size: 12px; color: var(--text-muted); }
+
+  .activity-list { display: flex; flex-direction: column; gap: 8px; }
+  .activity-item {
+    background: var(--sand);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .activity-item .time { font-size: 12px; color: var(--text-muted); min-width: 44px; }
+  .activity-item .name { flex: 1; font-weight: 500; }
+  .activity-item .cost { color: var(--teal-dark); font-weight: 600; }
+
+  /* ─── BUDGET ─── */
+  .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .budget-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .budget-row:last-child { border-bottom: none; }
+  .budget-label { font-size: 14px; color: var(--text-muted); }
+  .budget-amount { font-size: 15px; font-weight: 600; color: var(--text); }
+  .progress-bar { height: 8px; border-radius: 20px; background: var(--sand-dark); overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 20px; transition: width 0.4s; }
+
+  /* ─── CHECKLIST ─── */
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    accent-color: var(--teal);
+    flex-shrink: 0;
+    margin-bottom: 0;
+    border: none;
+  }
+  .check-item .item-name { flex: 1; }
+  .check-item.checked .item-name { text-decoration: line-through; color: var(--text-muted); }
+  .category-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--teal-light); color: var(--teal-dark); font-weight: 500; }
+  .category-tag.docs { background: #fef3e0; color: #9a6200; }
+  .category-tag.elec { background: #f0eeff; color: #5840a0; }
+  .category-tag.clothing { background: #ffe8e0; color: #994020; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .modal-title { font-family: var(--font-display); font-size: 22px; }
+  .modal-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); }
+  .modal-close:hover { background: var(--sand); }
+
+  /* ─── CITY SEARCH ─── */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border: 1.5px solid var(--border-medium);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    margin-bottom: 16px;
+  }
+  .search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: var(--font-body);
+    font-size: 14px;
+    background: transparent;
+    margin-bottom: 0;
+  }
+  .search-bar:focus-within { border-color: var(--teal); }
+  .city-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .city-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .city-row:hover { border-color: var(--teal); background: var(--teal-light); }
+  .city-flag { font-size: 20px; }
+  .city-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 1px; }
+  .city-info p { font-size: 11px; color: var(--text-muted); }
+  .city-cost { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--teal); }
+
+  /* ─── PROFILE ─── */
+  .profile-avatar-big {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 600;
+    font-family: var(--font-display);
+    margin: 0 auto 16px;
+  }
+  .pref-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .pref-row:last-child { border-bottom: none; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: var(--border-medium);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--teal); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 21px; }
+
+  /* ─── NOTES ─── */
+  .note-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .note-card:hover { border-color: var(--teal); }
+  .note-card h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .note-card p { font-size: 13px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .note-meta { font-size: 11px; color: var(--text-light); margin-top: 8px; }
+
+  /* ─── ADMIN ─── */
+  .admin-stat { padding: 20px; }
+  .admin-stat .big { font-size: 32px; font-weight: 700; font-family: var(--font-display); color: var(--teal-dark); }
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 48px; }
+  .mini-bar { background: var(--teal); border-radius: 3px 3px 0 0; flex: 1; opacity: 0.7; transition: opacity 0.15s; }
+  .mini-bar:hover { opacity: 1; }
+  .table-container { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  td { padding: 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--sand); }
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .badge-green { background: #e8f5e0; color: #3b6d11; }
+  .badge-amber { background: #fef3e0; color: #9a6200; }
+  .badge-blue { background: #e6f0fb; color: #1858a5; }
+
+  /* ─── SHARED ITINERARY ─── */
+  .share-hero {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 32px;
+  }
+  .share-meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .share-meta-item { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .timeline { padding-left: 24px; border-left: 2px solid var(--border); }
+  .timeline-item { position: relative; margin-bottom: 24px; padding-left: 20px; }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -27px; top: 6px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--teal);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--teal);
+  }
+  .timeline-city { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .timeline-act { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+
+  /* ─── TABS ─── */
+  .tabs { display: flex; gap: 4px; background: var(--sand-dark); border-radius: var(--radius); padding: 4px; margin-bottom: 20px; }
+  .tab-btn { flex: 1; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--text-muted); transition: all 0.15s; }
+  .tab-btn.active { background: var(--white); color: var(--text); box-shadow: var(--shadow); }
+
+  /* ─── FILTER CHIPS ─── */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-medium);
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--white);
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .chip:hover, .chip.active { background: var(--teal); border-color: var(--teal); color: white; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--text);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    z-index: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── MISC ─── */
+  .icon-sm { font-size: 16px; }
+  .text-muted { color: var(--text-muted); }
+  .text-teal { color: var(--teal); }
+  .text-coral { color: var(--coral); }
+  .gap-8 { gap: 8px; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-20 { margin-bottom: 20px; }
+  .mt-16 { margin-top: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .col-span-2 { grid-column: span 2; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  @media (max-width: 800px) {
+    .auth-panel { display: none; }
+    .auth-form-area { padding: 32px 24px; }
+    .page-content { padding: 20px; }
+    .trips-grid, .dash-grid, .dest-grid { grid-template-columns: 1fr 1fr; }
+    .builder-layout { grid-template-columns: 1fr; }
+    .budget-grid { grid-template-columns: 1fr; }
+    .city-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOAST
+═══════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL – CREATE TRIP
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="createTripModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Plan a new trip</h3>
+      <button class="modal-close" onclick="closeModal('createTripModal')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Trip name</label>
+      <input type="text" id="newTripName" placeholder="e.g. South India Adventure">
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Start date</label>
+        <input type="date" id="newTripStart">
+      </div>
+      <div>
+        <label>End date</label>
+        <input type="date" id="newTripEnd">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="newTripDesc" placeholder="Tell us about your trip..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="createTrip()">Create Trip ✈️</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL – ADD NOTE
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="addNoteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add note</h3>
+      <button class="modal-close" onclick="closeModal('addNoteModal')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="noteTitle" placeholder="Note title">
+    </div>
+    <div class="form-group">
+      <label>Note</label>
+      <textarea id="noteBody" style="min-height:120px" placeholder="Write your note..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Related trip</label>
+      <select id="noteTrip">
+        <option>South India Adventure</option>
+        <option>Japan Cherry Blossom</option>
+        <option>Italy Summer</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="addNote()">Save Note</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 1 – LOGIN
+═══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="auth-layout">
+    <div class="auth-panel">
+      <div class="auth-brand">
+        <h1>Traveloop</h1>
+        <span>Your journey, beautifully planned</span>
+      </div>
+      <div class="auth-tagline">
+        <p>Dream. Design. Discover. Your perfect journey starts here.</p>
+        <small>Join 50,000+ travelers already using Traveloop</small>
+      </div>
+    </div>
+    <div class="auth-form-area">
+      <div class="auth-form-box">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Sign in to continue planning your adventures</p>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="loginEmail" value="traveler@example.com" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" value="password" placeholder="••••••••">
+        </div>
+        <div style="text-align:right; margin-bottom:20px; margin-top:-8px;">
+          <a class="link" style="font-size:13px" href="#">Forgot password?</a>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="goTo('dashboard')">Sign in</button>
+        <div class="divider"><span>or</span></div>
+        <button class="btn btn-outline btn-full" onclick="goTo('dashboard')">🌐 Continue with Google</button>
+        <div class="auth-switch">
+          Don't have an account? <a class="link" onclick="goTo('signup')">Sign up free</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 2 – SIGN UP
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-signup">
+  <div class="auth-layout">
+    <div class="auth-panel">
+      <div class="auth-brand"><h1>Traveloop</h1><span>Your journey, beautifully planned</span></div>
+      <div class="auth-tagline">
+        <p>Plan multi-city trips, track budgets, share with friends.</p>
+        <small>Free forever. No credit card needed.</small>
+      </div>
+    </div>
+    <div class="auth-form-area">
+      <div class="auth-form-box">
+        <h2>Create account</h2>
+        <p class="subtitle">Start planning your dream trip today</p>
+        <div class="form-row">
+          <div><label>First name</label><input type="text" placeholder="Alex"></div>
+          <div><label>Last name</label><input type="text" placeholder="Smith"></div>
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="Create a strong password">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="goTo('dashboard')">Create account</button>
+        <div class="auth-switch">Already have an account? <a class="link" onclick="goTo('login')">Sign in</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 3 – DASHBOARD
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link active" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-primary btn-sm" onclick="openModal('createTripModal')">+ New Trip</button>
+      <div class="avatar" onclick="goTo('profile')">AS</div>
+    </div>
+  </nav>
+  <div class="page-content">
+    <div class="dash-hero">
+      <h2>Good morning, Alex ✈️</h2>
+      <p>You have 3 upcoming trips. Your next trip starts in 14 days.</p>
+      <div class="dash-hero-actions">
+        <button class="btn btn-white" onclick="openModal('createTripModal')">+ Plan New Trip</button>
+        <button class="btn btn-ghost-white" onclick="goTo('my-trips')">View All Trips</button>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="dashboardTotalTrips">7</div>
+        <div class="stat-label"><span class="stat-dot"></span>Total trips planned</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="dashboardCitiesExplored">23</div>
+        <div class="stat-label"><span class="stat-dot" style="background:var(--coral)"></span>Cities explored</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">₹4,200</div>
+        <div class="stat-label"><span class="stat-dot" style="background:#7c5cbf"></span>Budget tracked</div>
+      </div>
+    </div>
+
+    <div class="section-header mb-16">
+      <div class="section-title">Recent Trips</div>
+      <a class="link" onclick="goTo('my-trips')" style="font-size:13px;cursor:pointer">View all →</a>
+    </div>
+    <div class="trips-grid mb-20" id="dashboardRecentTrips" style="margin-bottom:28px"></div>
+
+    <div class="section-header mb-16">
+      <div class="section-title">Discover Destinations</div>
+      <button class="btn btn-ghost btn-sm" onclick="goTo('city-search')">Explore more</button>
+    </div>
+    <div class="dest-grid">
+      <div class="dest-card" onclick="goTo('city-search')">
+        <div class="dest-icon">�</div>
+        <h5>Chennai</h5>
+        <span>India · ₹</span>
+      </div>
+      <div class="dest-card" onclick="goTo('city-search')">
+        <div class="dest-icon">🏙</div>
+        <h5>Bangalore</h5>
+        <span>India · ₹</span>
+      </div>
+      <div class="dest-card" onclick="goTo('city-search')">
+        <div class="dest-icon">🏖</div>
+        <h5>Goa</h5>
+        <span>India · ₹</span>
+      </div>
+      <div class="dest-card" onclick="goTo('city-search')">
+        <div class="dest-icon">🏰</div>
+        <h5>Jaipur</h5>
+        <span>India · ₹</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 4 – MY TRIPS
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-my-trips">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link active" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-primary btn-sm" onclick="openModal('createTripModal')">+ New Trip</button>
+      <div class="avatar" onclick="goTo('profile')">AS</div>
+    </div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h2>My Trips</h2>
+          <p>Manage and organize all your travel plans</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('createTripModal')">+ Plan New Trip</button>
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip active">All trips</div>
+      <div class="chip" onclick="chipToggle(this)">Upcoming</div>
+      <div class="chip" onclick="chipToggle(this)">Planning</div>
+      <div class="chip" onclick="chipToggle(this)">Completed</div>
+    </div>
+    <div class="trips-grid" id="tripsList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 5 – ITINERARY BUILDER + VIEW
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-itinerary">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link active" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-outline btn-sm" onclick="goTo('shared')">🔗 Share</button>
+      <div class="avatar" onclick="goTo('profile')">AS</div>
+    </div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h2 id="itineraryTitle">South India Adventure</h2>
+          <p id="itinerarySubtitle">Aug 14–28, 2025 · 4 stops · 14 nights</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <div class="tabs" style="margin-bottom:0">
+            <button class="tab-btn active" onclick="switchTab(this,'builder')">Builder</button>
+            <button class="tab-btn" onclick="switchTab(this,'view')">View</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-builder">
+      <div class="builder-layout">
+        <div>
+          <div class="section-header mb-16">
+            <div class="section-title">Stops</div>
+            <button class="btn btn-primary btn-sm" onclick="goTo('city-search')">+ Add Stop</button>
+          </div>
+          <div class="stop-list" id="stopList"></div>
+          <button class="btn btn-outline btn-sm" style="width:100%;margin-top:4px" onclick="goTo('city-search')">+ Add another stop</button>
+        </div>
+        <div>
+          <div class="card" id="itineraryActivityCard">
+            <div class="section-header mb-16">
+              <div>
+                <div class="section-title" id="itineraryCardStop">Chennai 🇮🇳</div>
+                <div id="itineraryCardStopLabel" style="font-size:13px;color:var(--text-muted);margin-top:2px">Aug 14–17 · 3 nights</div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="goTo('activity-search')">+ Add Activity</button>
+            </div>
+            <div class="activity-list"></div>
+            <hr>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px">
+              <span style="color:var(--text-muted)">Day total</span>
+              <span style="font-weight:600;color:var(--teal-dark)" id="dayTotal">₹0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-view" style="display:none">
+      <div class="card">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="setItineraryView('timeline')">Timeline</button>
+          <button class="tab-btn" onclick="setItineraryView('calendar')">Calendar</button>
+          <button class="tab-btn" onclick="setItineraryView('list')">List</button>
+        </div>
+        <div class="timeline" id="itineraryViewContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 6 – CITY SEARCH
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-city-search">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('itinerary')">← Back to itinerary</button>
+      <div class="avatar" onclick="goTo('profile')">AS</div>
+    </div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header"><h2>Find Cities</h2><p>Search and add cities to your itinerary</p></div>
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" placeholder="Search cities worldwide..." oninput="filterCities(this.value)">
+    </div>
+    <div class="chips" id="regionChips">
+      <div class="chip active" onclick="selectCityRegion(this, 'All regions')">All regions</div>
+      <div class="chip" onclick="selectCityRegion(this, 'Asia')">Asia</div>
+      <div class="chip" onclick="selectCityRegion(this, 'Europe')">Europe</div>
+      <div class="chip" onclick="selectCityRegion(this, 'Middle East')">Middle East</div>
+      <div class="chip" onclick="selectCityRegion(this, 'Americas')">Americas</div>
+      <div class="chip" onclick="selectCityRegion(this, 'Africa')">Africa</div>
+      <div class="chip" onclick="selectCityRegion(this, 'Oceania')">Oceania</div>
+    </div>
+    <div class="city-grid" id="cityGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 7 – ACTIVITY SEARCH
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-activity-search">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('itinerary')">← Back</button>
+      <div class="avatar" onclick="goTo('profile')">AS</div>
+    </div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header"><h2 id="activitySearchTitle">Activities in Chennai 🇮🇳</h2><p>Find and add things to do</p></div>
+    <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search activities..."></div>
+    <div class="chips">
+      <div class="chip active">All</div>
+      <div class="chip" onclick="chipToggle(this)">Sightseeing</div>
+      <div class="chip" onclick="chipToggle(this)">Food & Drink</div>
+      <div class="chip" onclick="chipToggle(this)">Adventure</div>
+      <div class="chip" onclick="chipToggle(this)">Culture</div>
+      <div class="chip" onclick="chipToggle(this)">Nature</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px" id="activityCardsContainer"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 8 – BUDGET
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-budget">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link active" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right"><div class="avatar" onclick="goTo('profile')">AS</div></div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header"><h2>Trip Budget</h2><p>South India Adventure · Aug 14–28</p></div>
+    <div class="budget-grid">
+      <div class="card">
+        <div class="section-title mb-16">Budget overview</div>
+        <div style="text-align:center;padding:16px 0">
+          <svg width="160" height="160" viewBox="0 0 160 160" style="display:block;margin:0 auto">
+            <circle cx="80" cy="80" r="62" fill="none" stroke="var(--sand-dark)" stroke-width="18"/>
+            <circle cx="80" cy="80" r="62" fill="none" stroke="var(--teal)" stroke-width="18" stroke-dasharray="246 143" stroke-dashoffset="30" stroke-linecap="round"/>
+            <circle cx="80" cy="80" r="62" fill="none" stroke="var(--coral)" stroke-width="18" stroke-dasharray="90 299" stroke-dashoffset="-216" stroke-linecap="round"/>
+            <circle cx="80" cy="80" r="62" fill="none" stroke="#7c5cbf" stroke-width="18" stroke-dasharray="52 337" stroke-dashoffset="-306" stroke-linecap="round"/>
+          </svg>
+          <div style="margin-top:12px">
+            <div style="font-size:28px;font-weight:700;font-family:var(--font-display)">₹25,000</div>
+            <div style="font-size:13px;color:var(--text-muted)">of ₹30,000 total budget</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--teal);flex-shrink:0"></div>
+            <span style="flex:1">Transport</span><span style="font-weight:600">₹9,800</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--coral);flex-shrink:0"></div>
+            <span style="flex:1">Stay</span><span style="font-weight:600">₹3,600</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:12px;height:12px;border-radius:3px;background:#7c5cbf;flex-shrink:0"></div>
+            <span style="flex:1">Activities</span><span style="font-weight:600">₹2,100</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--sand-dark);flex-shrink:0"></div>
+            <span style="flex:1">Meals</span><span style="font-weight:600">₹8,500</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title mb-16">Breakdown by category</div>
+        <div class="budget-row">
+          <span class="budget-label">✈️ Flights</span>
+          <span class="budget-amount">₹7,800</span>
+        </div>
+        <div class="budget-row">
+          <span class="budget-label">🚌 Local transport</span>
+          <span class="budget-amount">₹2,000</span>
+        </div>
+        <div class="budget-row">
+          <span class="budget-label">🏨 Accommodation</span>
+          <span class="budget-amount">₹3,600</span>
+        </div>
+        <div class="budget-row">
+          <span class="budget-label">🎫 Activities</span>
+          <span class="budget-amount">₹2,100</span>
+        </div>
+        <div class="budget-row">
+          <span class="budget-label">🍽️ Meals</span>
+          <span class="budget-amount">₹8,500</span>
+        </div>
+        <hr>
+        <div class="budget-row" style="border-bottom:none">
+          <span style="font-weight:600;font-size:15px">Total estimated</span>
+          <span style="font-weight:700;font-size:18px;color:var(--teal-dark)">₹25,000</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="section-title mb-16">Per-day breakdown</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span>Chennai (Aug 14–17)</span>
+            <span style="font-weight:600">₹2,800</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:65%;background:var(--teal)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span>Bangalore (Aug 17–20)</span>
+            <span style="font-weight:600">₹2,100</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:48%;background:var(--teal)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span>Hyderabad (Aug 20–24)</span>
+            <span style="font-weight:600">₹3,800 <span style="color:var(--coral);font-size:11px">⚠️ over avg</span></span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:88%;background:var(--coral)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span>Mumbai (Aug 24–28)</span>
+            <span style="font-weight:600">₹3,200</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:74%;background:var(--teal)"></div></div>
+        </div>
+      </div>
+      <div style="background:var(--coral-light);border:1px solid #f5c2b0;border-radius:var(--radius);padding:12px 14px;margin-top:16px;font-size:13px;color:#8a3820">
+        ⚠️ Hanoi is estimated above average. Consider adjusting accommodation or meal choices.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 9 – PACKING CHECKLIST
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-checklist">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link active" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right"><div class="avatar" onclick="goTo('profile')">AS</div></div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><h2>Packing Checklist</h2><p>South India Adventure · 8 of 15 packed</p></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="resetChecklist()">↺ Reset</button>
+          <button class="btn btn-primary btn-sm" onclick="addCheckItem()">+ Add item</button>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--teal-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;font-weight:500">
+        <span>Packing progress</span>
+        <span id="packProgress">8 / 15</span>
+      </div>
+      <div class="progress-bar" style="height:10px"><div class="progress-fill" id="packBar" style="width:53%;background:var(--teal)"></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title mb-16">👔 Clothing</div>
+        <div id="clothingList">
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Light t-shirts (5)</span><span class="category-tag clothing">Clothing</span></div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Shorts (3 pairs)</span><span class="category-tag clothing">Clothing</span></div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Swimwear (2)</span><span class="category-tag clothing">Clothing</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Comfortable walking shoes</span><span class="category-tag clothing">Clothing</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Flip flops</span><span class="category-tag clothing">Clothing</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Rain jacket</span><span class="category-tag clothing">Clothing</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title mb-16">📄 Documents</div>
+        <div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Passport (valid 6+ months)</span><span class="category-tag docs">Docs</span></div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Travel insurance card</span><span class="category-tag docs">Docs</span></div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Flight tickets (printed)</span><span class="category-tag docs">Docs</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Hotel confirmations</span><span class="category-tag docs">Docs</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Emergency contacts sheet</span><span class="category-tag docs">Docs</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title mb-16">⚡ Electronics</div>
+        <div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Phone + charger</span><span class="category-tag elec">Electronics</span></div>
+          <div class="check-item checked"><input type="checkbox" checked onchange="updateProgress()"><span class="item-name">Power bank</span><span class="category-tag elec">Electronics</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Universal adapter</span><span class="category-tag elec">Electronics</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Camera</span><span class="category-tag elec">Electronics</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title mb-16">💊 Health & Hygiene</div>
+        <div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Sunscreen SPF 50</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Insect repellent</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">First aid kit</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Diarrhea medication</span></div>
+          <div class="check-item"><input type="checkbox" onchange="updateProgress()"><span class="item-name">Water purification tablets</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 10 – SHARED ITINERARY
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-shared">
+  <div style="background:var(--white);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="showToast('📋 Trip copied to your account!')">📋 Copy trip</button>
+      <button class="btn btn-outline btn-sm" onclick="showToast('🔗 Link copied!')">🔗 Share</button>
+      <button class="btn btn-primary btn-sm" onclick="goTo('login')">Sign in to plan</button>
+    </div>
+  </div>
+  <div class="share-hero">
+    <h2 style="font-family:var(--font-display);font-size:28px" id="sharedTitle">South India Adventure</h2>
+    <p style="color:var(--text-muted);margin-top:4px">Planned by Alex Smith · Shared publicly</p>
+    <div class="share-meta">
+      <span class="share-meta-item" id="sharedDate">📅 Aug 14–28, 2025</span>
+      <span class="share-meta-item" id="sharedCities">🏙 4 cities</span>
+      <span class="share-meta-item" id="sharedNights">🌙 14 nights</span>
+      <span class="share-meta-item" id="sharedCost">💰 ~₹25,000</span>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="card">
+      <div class="section-title mb-16">Full itinerary</div>
+      <div class="timeline" id="sharedTimeline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 11 – NOTES / JOURNAL
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-notes">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link active" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-primary btn-sm" onclick="openModal('addNoteModal')">+ New Note</button>
+      <div class="avatar" onclick="goTo('profile')">AS</div>
+    </div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header"><h2>Trip Notes & Journal</h2><p>Your personal reminders and travel notes</p></div>
+    <div class="grid-2" id="notesList">
+      <div class="note-card" onclick="showToast('Note opened')">
+        <h5>🏨 Chennai hotel check-in info</h5>
+        <p>The Leela Palace Chennai – check-in after 2pm. Request a courtyard-facing room. Breakfast included. Local contact: +91 44 1234 5678</p>
+        <div class="note-meta">South India Adventure · Aug 14, 2025</div>
+      </div>
+      <div class="note-card" onclick="showToast('Note opened')">
+        <h5>🍛 South India food must-tries</h5>
+        <p>Try Masala Dosa at Sangeetha in Chennai, Hyderabadi Biryani in Hyderabad, and filter coffee with banana chips in Bangalore.</p>
+        <div class="note-meta">South India Adventure · Aug 12, 2025</div>
+      </div>
+      <div class="note-card" onclick="showToast('Note opened')">
+        <h5>📍 Local contacts in Bangalore</h5>
+        <p>Guide Ravi: +91 80 9876 5432. He offers city tours and food walks. He accepts INR and can book temple entries.</p>
+        <div class="note-meta">South India Adventure · Aug 10, 2025</div>
+      </div>
+      <div class="note-card" onclick="showToast('Note opened')">
+        <h5>💊 Medication reminder</h5>
+        <p>Pack motion sickness tablets for long car rides and keep sanitizer handy. Carry essential medicines in original packaging.</p>
+        <div class="note-meta">South India Adventure · Aug 5, 2025</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 12 – PROFILE / SETTINGS
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-profile">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('dashboard')">← Dashboard</button>
+    </div>
+  </nav>
+  <div class="page-content" style="max-width:680px">
+    <div class="page-header"><h2>Profile & Settings</h2></div>
+    <div class="card" style="margin-bottom:16px">
+      <div style="text-align:center;padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:20px">
+        <div class="profile-avatar-big">AS</div>
+        <h3 style="font-family:var(--font-display);font-size:22px">Alex Smith</h3>
+        <p style="color:var(--text-muted);font-size:14px">traveler@example.com</p>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="showToast('📷 Upload photo')">Change photo</button>
+      </div>
+      <div class="form-row">
+        <div><label>First name</label><input type="text" value="Alex"></div>
+        <div><label>Last name</label><input type="text" value="Smith"></div>
+      </div>
+      <div><label>Email</label><input type="email" value="traveler@example.com"></div>
+      <div><label>Language preference</label>
+        <select><option>English</option><option>Spanish</option><option>French</option><option>German</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="showToast('✅ Profile saved!')">Save changes</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title mb-16">Preferences</div>
+      <div class="pref-row">
+        <span>Email notifications</span>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="pref-row">
+        <span>Trip reminders</span>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="pref-row">
+        <span>Public profile</span>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="pref-row">
+        <span>Share analytics</span>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title mb-16">Saved destinations</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="chip active">🏯 Kyoto</span>
+        <span class="chip active">🗼 Paris</span>
+        <span class="chip active">🏝 Maldives</span>
+        <span class="chip active">🗽 New York</span>
+        <button class="btn btn-outline btn-sm" onclick="goTo('city-search')">+ Add destination</button>
+      </div>
+      <hr>
+      <button class="btn btn-ghost btn-sm" style="color:var(--coral)" onclick="showToast('Account deletion requires email confirmation')">Delete account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 13 – ADMIN / ANALYTICS
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-admin">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goTo('dashboard')">Travel<span>oop</span></div>
+    <div class="nav-links">
+      <div class="nav-link" onclick="goTo('dashboard')">Dashboard</div>
+      <div class="nav-link" onclick="goTo('my-trips')">My Trips</div>
+      <div class="nav-link" onclick="goTo('itinerary')">Itinerary</div>
+      <div class="nav-link" onclick="goTo('budget')">Budget</div>
+      <div class="nav-link" onclick="goTo('checklist')">Checklist</div>
+      <div class="nav-link" onclick="goTo('notes')">Notes</div>
+      <div class="nav-link active" onclick="goTo('admin')">Admin</div>
+    </div>
+    <div class="nav-right"><div class="avatar" onclick="goTo('profile')">AS</div></div>
+  </nav>
+  <div class="page-content">
+    <div class="page-header"><h2>Admin Dashboard</h2><p>Platform analytics and user management</p></div>
+    <div class="dash-grid" style="margin-bottom:20px">
+      <div class="stat-card admin-stat">
+        <div class="big">12,480</div>
+        <div class="stat-label">Total users</div>
+        <div style="font-size:12px;color:var(--teal);margin-top:4px">▲ 8.2% this month</div>
+      </div>
+      <div class="stat-card admin-stat">
+        <div class="big">34,921</div>
+        <div class="stat-label">Trips created</div>
+        <div style="font-size:12px;color:var(--teal);margin-top:4px">▲ 12.4% this month</div>
+      </div>
+      <div class="stat-card admin-stat">
+        <div class="big">87.3%</div>
+        <div class="stat-label">Active user rate</div>
+        <div style="font-size:12px;color:var(--teal);margin-top:4px">▲ 3.1% this month</div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="section-title mb-16">Trips created (last 7 days)</div>
+        <div class="mini-chart" style="height:80px">
+          <div class="mini-bar" style="height:40%" title="Mon"></div>
+          <div class="mini-bar" style="height:65%" title="Tue"></div>
+          <div class="mini-bar" style="height:50%" title="Wed"></div>
+          <div class="mini-bar" style="height:85%" title="Thu"></div>
+          <div class="mini-bar" style="height:72%" title="Fri"></div>
+          <div class="mini-bar" style="height:90%" title="Sat"></div>
+          <div class="mini-bar" style="height:60%" title="Sun"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-top:4px">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title mb-16">Top cities added</div>
+        <div>
+          <div class="budget-row"><span class="budget-label">🏙 Mumbai</span><span style="font-weight:600">4,821 trips</span></div>
+          <div class="budget-row"><span class="budget-label">🏛 Delhi</span><span style="font-weight:600">4,302 trips</span></div>
+          <div class="budget-row"><span class="budget-label">🏖 Goa</span><span style="font-weight:600">3,987 trips</span></div>
+          <div class="budget-row"><span class="budget-label">🏰 Jaipur</span><span style="font-weight:600">3,654 trips</span></div>
+          <div class="budget-row"><span class="budget-label">🌄 Manali</span><span style="font-weight:600">2,901 trips</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-header mb-16">
+        <div class="section-title">User management</div>
+        <div class="search-bar" style="margin:0;width:260px;padding:8px 12px">
+          <span>🔍</span><input type="text" placeholder="Search users..." style="margin-bottom:0">
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Trips</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">AS</div>Alex Smith</div></td>
+              <td style="color:var(--text-muted)">alex@example.com</td>
+              <td>7</td>
+              <td style="color:var(--text-muted)">Jan 2025</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('Viewing user')">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--coral);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">JK</div>Jamie Kim</div></td>
+              <td style="color:var(--text-muted)">jamie@example.com</td>
+              <td>12</td>
+              <td style="color:var(--text-muted)">Feb 2025</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('Viewing user')">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:#7c5cbf;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">ML</div>Maria Lopez</div></td>
+              <td style="color:var(--text-muted)">maria@example.com</td>
+              <td>3</td>
+              <td style="color:var(--text-muted)">Mar 2025</td>
+              <td><span class="badge badge-amber">Inactive</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('Viewing user')">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:#d4880e;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">RC</div>Ravi Chandra</div></td>
+              <td style="color:var(--text-muted)">ravi@example.com</td>
+              <td>18</td>
+              <td style="color:var(--text-muted)">Nov 2024</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('Viewing user')">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── ROUTING ───────────────────────────────────────
+  const SCREENS = {
+    'login': 'screen-login',
+    'signup': 'screen-signup',
+    'dashboard': 'screen-dashboard',
+    'my-trips': 'screen-my-trips',
+    'itinerary': 'screen-itinerary',
+    'city-search': 'screen-city-search',
+    'activity-search': 'screen-activity-search',
+    'budget': 'screen-budget',
+    'checklist': 'screen-checklist',
+    'shared': 'screen-shared',
+    'notes': 'screen-notes',
+    'profile': 'screen-profile',
+    'admin': 'screen-admin',
+  };
+
+  function goTo(screen) {
+    Object.values(SCREENS).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+    });
+    const target = document.getElementById(SCREENS[screen]);
+    if (target) {
+      target.classList.add('active');
+      target.style.display = 'flex';
+      window.scrollTo(0, 0);
+      renderScreen(screen);
+    }
+  }
+
+  // ─── MODALS ────────────────────────────────────────
+  function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+  function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+  });
+
+  // ─── TOAST ─────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  const trips = [
+    {
+      id: 'trip1',
+      name: 'South India Adventure',
+      start: '2025-08-14',
+      end: '2025-08-28',
+      dateLabel: 'Aug 14–28',
+      status: 'Upcoming',
+      badgeClass: 'badge-green',
+      cost: 25000,
+      nights: 14,
+      stops: ['Chennai 🇮🇳', 'Bangalore 🇮🇳', 'Hyderabad 🇮🇳', 'Mumbai 🇮🇳'],
+      activities: {
+        'Chennai 🇮🇳': [
+          { time: '09:00', name: 'Marina Beach Walk', cost: 0 },
+          { time: '12:30', name: 'Street Food at Mylapore', cost: 500 },
+          { time: '15:00', name: 'Kapaleeshwarar Temple', cost: 100 },
+          { time: '19:30', name: 'Dinner at Taj Coromandel', cost: 2500 },
+        ],
+        'Bangalore 🇮🇳': [
+          { time: '10:00', name: 'Lalbagh Botanical Garden', cost: 200 },
+          { time: '13:00', name: 'Lunch at Koshy\'s', cost: 800 },
+          { time: '16:00', name: 'Bangalore Palace', cost: 300 },
+        ],
+        'Hyderabad 🇮🇳': [
+          { time: '11:00', name: 'Charminar Visit', cost: 150 },
+          { time: '14:00', name: 'Biryani at Shadab', cost: 600 },
+          { time: '17:00', name: 'Golconda Fort', cost: 250 },
+        ],
+        'Mumbai 🇮🇳': [
+          { time: '09:30', name: 'Gateway of India', cost: 200 },
+          { time: '12:00', name: 'Street Food at Chowpatty', cost: 400 },
+          { time: '15:30', name: 'Elephanta Caves', cost: 1500 },
+          { time: '20:00', name: 'Dinner at The Table', cost: 3000 },
+        ],
+      },
+    },
+    {
+      id: 'trip2',
+      name: 'North India Heritage',
+      start: '2025-10-01',
+      end: '2025-10-10',
+      dateLabel: 'Oct 1–10',
+      status: 'Planning',
+      badgeClass: 'badge-amber',
+      cost: 35000,
+      nights: 9,
+      stops: ['Delhi 🇮🇳', 'Jaipur 🇮🇳', 'Agra 🇮🇳'],
+      activities: {
+        'Delhi 🇮🇳': [
+          { time: '08:00', name: 'Red Fort', cost: 300 },
+          { time: '11:00', name: 'India Gate', cost: 0 },
+          { time: '14:00', name: 'Lunch at Karim\'s', cost: 700 },
+        ],
+        'Jaipur 🇮🇳': [
+          { time: '09:00', name: 'Amber Fort', cost: 500 },
+          { time: '12:00', name: 'City Palace', cost: 400 },
+          { time: '16:00', name: 'Hawa Mahal', cost: 200 },
+        ],
+        'Agra 🇮🇳': [
+          { time: '07:00', name: 'Taj Mahal Sunrise', cost: 1000 },
+          { time: '10:00', name: 'Agra Fort', cost: 300 },
+          { time: '13:00', name: 'Lunch at Pinch of Spice', cost: 600 },
+        ],
+      },
+    },
+    {
+      id: 'trip3',
+      name: 'Kerala Backwaters',
+      start: '2025-12-20',
+      end: '2026-01-05',
+      dateLabel: 'Dec 20–Jan 5',
+      status: 'Draft',
+      badgeClass: 'badge-blue',
+      cost: 45000,
+      nights: 16,
+      stops: ['Kochi 🇮🇳', 'Alleppey 🇮🇳', 'Munnar 🇮🇳'],
+      activities: {
+        'Kochi 🇮🇳': [
+          { time: '10:00', name: 'Chinese Fishing Nets', cost: 200 },
+          { time: '13:00', name: 'Lunch at Fort Kochi', cost: 800 },
+          { time: '16:00', name: 'Dutch Cemetery', cost: 100 },
+        ],
+        'Alleppey 🇮🇳': [
+          { time: '09:00', name: 'Houseboat Cruise', cost: 2000 },
+          { time: '12:00', name: 'Backwater Village Visit', cost: 500 },
+        ],
+        'Munnar 🇮🇳': [
+          { time: '08:00', name: 'Tea Plantation Walk', cost: 300 },
+          { time: '11:00', name: 'Eravikulam National Park', cost: 400 },
+          { time: '14:00', name: 'Lunch at Lockhart Tea Bungalow', cost: 1200 },
+        ],
+      },
+    },
+  ];
+
+  // Available activities for each city
+  const availableActivities = {
+    'Chennai 🇮🇳': [
+      { name: 'Marina Beach Walk', category: 'Sightseeing', duration: '2 hours', rating: 4.8, cost: 0, icon: '🏛' },
+      { name: 'Street Food Tour', category: 'Food & Drink', duration: '3 hours', rating: 4.6, cost: 500, icon: '🍜' },
+      { name: 'Kapaleeshwarar Temple', category: 'Culture', duration: '1.5 hours', rating: 4.9, cost: 100, icon: '🛕' },
+      { name: 'Dinner at Taj Coromandel', category: 'Food & Drink', duration: '2 hours', rating: 4.7, cost: 2500, icon: '🌃' },
+      { name: 'Chennai Port Cruise', category: 'Adventure', duration: '3 hours', rating: 4.7, cost: 1200, icon: '🚢' },
+      { name: 'Fort St. George', category: 'Culture', duration: '2 hours', rating: 4.5, cost: 200, icon: '🏰' },
+      { name: 'San Thome Basilica', category: 'Culture', duration: '1 hour', rating: 4.6, cost: 0, icon: '⛪' },
+    ],
+    'Bangalore 🇮🇳': [
+      { name: 'Lalbagh Botanical Garden', category: 'Nature', duration: '2 hours', rating: 4.7, cost: 200, icon: '🌸' },
+      { name: 'Bangalore Palace', category: 'Culture', duration: '1.5 hours', rating: 4.5, cost: 300, icon: '🏰' },
+      { name: 'Cubbon Park', category: 'Nature', duration: '1 hour', rating: 4.4, cost: 0, icon: '🌳' },
+      { name: 'Vidhana Soudha', category: 'Culture', duration: '1 hour', rating: 4.6, cost: 0, icon: '🏛' },
+      { name: 'Commercial Street Shopping', category: 'Sightseeing', duration: '2 hours', rating: 4.3, cost: 0, icon: '🛍' },
+      { name: 'ISKCON Temple', category: 'Culture', duration: '1.5 hours', rating: 4.8, cost: 100, icon: '🛕' },
+    ],
+    'Hyderabad 🇮🇳': [
+      { name: 'Charminar Visit', category: 'Culture', duration: '1 hour', rating: 4.7, cost: 150, icon: '🕌' },
+      { name: 'Golconda Fort', category: 'Culture', duration: '2 hours', rating: 4.8, cost: 250, icon: '🏰' },
+      { name: 'Hussain Sagar Lake', category: 'Sightseeing', duration: '1.5 hours', rating: 4.5, cost: 0, icon: '🏞' },
+      { name: 'Biryani at Shadab', category: 'Food & Drink', duration: '1 hour', rating: 4.9, cost: 600, icon: '🍛' },
+      { name: 'Salar Jung Museum', category: 'Culture', duration: '2 hours', rating: 4.6, cost: 200, icon: '🏛' },
+    ],
+    'Mumbai 🇮🇳': [
+      { name: 'Gateway of India', category: 'Sightseeing', duration: '1 hour', rating: 4.6, cost: 200, icon: '🏛' },
+      { name: 'Elephanta Caves', category: 'Culture', duration: '4 hours', rating: 4.7, cost: 1500, icon: '⛵' },
+      { name: 'Marine Drive Walk', category: 'Sightseeing', duration: '1 hour', rating: 4.8, cost: 0, icon: '🌅' },
+      { name: 'Street Food at Chowpatty', category: 'Food & Drink', duration: '2 hours', rating: 4.5, cost: 400, icon: '🍲' },
+      { name: 'Chhatrapati Shivaji Terminus', category: 'Culture', duration: '1 hour', rating: 4.9, cost: 0, icon: '🚂' },
+    ],
+    'Delhi 🇮🇳': [
+      { name: 'Red Fort', category: 'Culture', duration: '2 hours', rating: 4.8, cost: 300, icon: '🏰' },
+      { name: 'India Gate', category: 'Sightseeing', duration: '1 hour', rating: 4.7, cost: 0, icon: '🏛' },
+      { name: 'Qutub Minar', category: 'Culture', duration: '1.5 hours', rating: 4.6, cost: 250, icon: '🕌' },
+      { name: 'Lotus Temple', category: 'Culture', duration: '1 hour', rating: 4.5, cost: 0, icon: '🕊' },
+      { name: 'Lunch at Karim\'s', category: 'Food & Drink', duration: '1 hour', rating: 4.8, cost: 700, icon: '🍖' },
+    ],
+    'Jaipur 🇮🇳': [
+      { name: 'Amber Fort', category: 'Culture', duration: '3 hours', rating: 4.9, cost: 500, icon: '🏰' },
+      { name: 'City Palace', category: 'Culture', duration: '2 hours', rating: 4.7, cost: 400, icon: '🏛' },
+      { name: 'Hawa Mahal', category: 'Culture', duration: '1 hour', rating: 4.6, cost: 200, icon: '🏰' },
+      { name: 'Jantar Mantar', category: 'Culture', duration: '1.5 hours', rating: 4.5, cost: 150, icon: '🌟' },
+    ],
+    'Agra 🇮🇳': [
+      { name: 'Taj Mahal', category: 'Culture', duration: '2 hours', rating: 4.9, cost: 1000, icon: '🏛' },
+      { name: 'Agra Fort', category: 'Culture', duration: '2 hours', rating: 4.8, cost: 300, icon: '🏰' },
+      { name: 'Fatehpur Sikri', category: 'Culture', duration: '3 hours', rating: 4.7, cost: 400, icon: '🏛' },
+    ],
+    'Kochi 🇮🇳': [
+      { name: 'Chinese Fishing Nets', category: 'Culture', duration: '1 hour', rating: 4.6, cost: 200, icon: '🎣' },
+      { name: 'Dutch Cemetery', category: 'Culture', duration: '1 hour', rating: 4.4, cost: 100, icon: '⚰' },
+      { name: 'Maritime Museum', category: 'Culture', duration: '1.5 hours', rating: 4.5, cost: 150, icon: '🚢' },
+    ],
+    'Goa 🇮🇳': [
+      { name: 'Calangute Beach', category: 'Nature', duration: '3 hours', rating: 4.5, cost: 0, icon: '🏖' },
+      { name: 'Basilica of Bom Jesus', category: 'Culture', duration: '1 hour', rating: 4.7, cost: 100, icon: '⛪' },
+      { name: 'Dudhsagar Falls', category: 'Adventure', duration: '4 hours', rating: 4.8, cost: 800, icon: '🌊' },
+    ],
+    'Ooty 🇮🇳': [
+      { name: 'Ooty Lake', category: 'Nature', duration: '2 hours', rating: 4.6, cost: 200, icon: '🏞' },
+      { name: 'Botanical Gardens', category: 'Nature', duration: '1.5 hours', rating: 4.5, cost: 150, icon: '🌸' },
+      { name: 'Nilgiri Mountain Railway', category: 'Adventure', duration: '3 hours', rating: 4.7, cost: 500, icon: '🚂' },
+    ],
+    'Manali 🇮🇳': [
+      { name: 'Rohtang Pass', category: 'Adventure', duration: '6 hours', rating: 4.8, cost: 1200, icon: '🏔' },
+      { name: 'Hadimba Temple', category: 'Culture', duration: '1 hour', rating: 4.6, cost: 100, icon: '🛕' },
+      { name: 'Solang Valley', category: 'Adventure', duration: '4 hours', rating: 4.7, cost: 600, icon: '🎿' },
+    ],
+    'Pondicherry 🇮🇳': [
+      { name: 'Promenade Beach', category: 'Nature', duration: '2 hours', rating: 4.4, cost: 0, icon: '🏖' },
+      { name: 'Auroville', category: 'Culture', duration: '3 hours', rating: 4.5, cost: 300, icon: '🕉' },
+      { name: 'French Quarter Walking Tour', category: 'Culture', duration: '2 hours', rating: 4.6, cost: 200, icon: '🏛' },
+    ],
+    'Mysore 🇮🇳': [
+      { name: 'Mysore Palace', category: 'Culture', duration: '2 hours', rating: 4.9, cost: 300, icon: '🏰' },
+      { name: 'Chamundi Hill', category: 'Nature', duration: '3 hours', rating: 4.6, cost: 200, icon: '⛰' },
+      { name: 'Brindavan Gardens', category: 'Nature', duration: '1.5 hours', rating: 4.7, cost: 150, icon: '🌸' },
+    ],
+    'Alleppey 🇮🇳': [
+      { name: 'Houseboat Cruise', category: 'Adventure', duration: '8 hours', rating: 4.8, cost: 2000, icon: '🚣' },
+      { name: 'Backwater Village Visit', category: 'Culture', duration: '2 hours', rating: 4.5, cost: 500, icon: '🏘' },
+    ],
+    'Munnar 🇮🇳': [
+      { name: 'Tea Plantation Walk', category: 'Nature', duration: '3 hours', rating: 4.7, cost: 300, icon: '☕' },
+      { name: 'Eravikulam National Park', category: 'Nature', duration: '4 hours', rating: 4.8, cost: 400, icon: '🦌' },
+      { name: 'Mattupetty Dam', category: 'Nature', duration: '2 hours', rating: 4.6, cost: 200, icon: '💧' },
+    ],
+  };
+
+  let activeTripId = trips[0]?.id || null;
+  let selectedStop = 'Chennai 🇮🇳';
+  let itineraryViewMode = 'timeline';
+  let activeCityRegion = 'All regions';
+  let citySearchQuery = '';
+
+  const cityList = [
+    { name: 'Chennai', region: 'Asia', country: 'India', note: 'Tamil Nadu · Very popular', flag: '🇮🇳', cost: '₹' },
+    { name: 'Coimbatore', region: 'Asia', country: 'India', note: 'Tamil Nadu · Comfort city', flag: '🇮🇳', cost: '₹' },
+    { name: 'Bangalore', region: 'Asia', country: 'India', note: 'Karnataka · Tech hub', flag: '🇮🇳', cost: '₹' },
+    { name: 'Hyderabad', region: 'Asia', country: 'India', note: 'Telangana · Historic city', flag: '🇮🇳', cost: '₹' },
+    { name: 'Mumbai', region: 'Asia', country: 'India', note: 'Maharashtra · Coastal city', flag: '🇮🇳', cost: '₹₹₹' },
+    { name: 'Delhi', region: 'Asia', country: 'India', note: 'Delhi · Capital region', flag: '🇮🇳', cost: '₹₹' },
+    { name: 'Kochi', region: 'Asia', country: 'India', note: 'Kerala · Backwaters', flag: '🇮🇳', cost: '₹' },
+    { name: 'Jaipur', region: 'Asia', country: 'India', note: 'Rajasthan · Palace city', flag: '🇮🇳', cost: '₹' },
+    { name: 'Goa', region: 'Asia', country: 'India', note: 'Goa · Beach escape', flag: '🇮🇳', cost: '₹' },
+    { name: 'Paris', region: 'Europe', country: 'France', note: 'City of lights', flag: '🇫🇷', cost: '€€' },
+    { name: 'Rome', region: 'Europe', country: 'Italy', note: 'Ancient monuments', flag: '🇮🇹', cost: '€€' },
+    { name: 'London', region: 'Europe', country: 'UK', note: 'Historic and modern', flag: '🇬🇧', cost: '££' },
+    { name: 'Amsterdam', region: 'Europe', country: 'Netherlands', note: 'Canals and culture', flag: '🇳🇱', cost: '€€' },
+    { name: 'Dubai', region: 'Middle East', country: 'UAE', note: 'Modern desert city', flag: '🇦🇪', cost: 'AED' },
+    { name: 'Doha', region: 'Middle East', country: 'Qatar', note: 'Coastal capital', flag: '🇶🇦', cost: 'QAR' },
+    { name: 'Abu Dhabi', region: 'Middle East', country: 'UAE', note: 'Capital skyline', flag: '🇦🇪', cost: 'AED' },
+    { name: 'New York', region: 'Americas', country: 'USA', note: 'Big apple', flag: '🇺🇸', cost: '$$' },
+    { name: 'Rio de Janeiro', region: 'Americas', country: 'Brazil', note: 'Beach and carnival', flag: '🇧🇷', cost: '$$' },
+    { name: 'Cape Town', region: 'Africa', country: 'South Africa', note: 'Coastal mountain city', flag: '🇿🇦', cost: '$$' },
+    { name: 'Sydney', region: 'Oceania', country: 'Australia', note: 'Harbour city', flag: '🇦🇺', cost: '$$$' },
+  ];
+
+  function getCurrentTrip() {
+    return trips.find(t => t.id === activeTripId) || trips[0];
+  }
+
+  function cleanStopName(stop) {
+    return stop.replace(/[\u{1F300}-\u{1FAFF}\u{1F1E6}-\u{1F1FF}]/gu, '').trim();
+  }
+
+  function buildTripCard(trip, showActions = false) {
+    const card = document.createElement('div');
+    card.className = 'trip-card';
+    card.onclick = () => {
+      activeTripId = trip.id;
+      renderItinerary();
+      goTo('itinerary');
+    };
+    const thumb = document.createElement('div');
+    thumb.className = 'trip-card-thumb ' + (trip.thumbClass || '');
+    thumb.innerHTML = `<span class="trip-card-badge">🗓 ${trip.dateLabel}</span>`;
+    const body = document.createElement('div');
+    body.className = 'trip-card-body';
+    body.innerHTML = `<h4>${trip.name}</h4><p>${trip.stops.join(' · ')}</p>`;
+    const footer = document.createElement('div');
+    footer.className = 'trip-card-footer';
+    const meta = document.createElement('span');
+    meta.className = 'trip-meta';
+    meta.textContent = `${trip.stops.length} stops · ₹${trip.cost.toLocaleString()} est.`;
+    footer.appendChild(meta);
+    if (showActions) {
+      const actions = document.createElement('div');
+      actions.style.display = 'flex';
+      actions.style.gap = '6px';
+      actions.innerHTML = `
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();showToast('✏️ Edit mode')">✏️</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();goTo('shared')">🔗</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();showToast('🗑 Deleted trip')">🗑</button>
+      `;
+      footer.appendChild(actions);
+    } else {
+      const badge = document.createElement('span');
+      badge.className = 'badge ' + trip.badgeClass;
+      badge.textContent = trip.status;
+      footer.appendChild(badge);
+    }
+    card.appendChild(thumb);
+    card.appendChild(body);
+    card.appendChild(footer);
+    return card;
+  }
+
+  function renderDashboard() {
+    const recent = document.getElementById('dashboardRecentTrips');
+    if (recent) {
+      recent.innerHTML = '';
+      trips.slice(0, 3).forEach(trip => recent.appendChild(buildTripCard(trip, false)));
+    }
+    const totalTrips = document.getElementById('dashboardTotalTrips');
+    const cityCount = document.getElementById('dashboardCitiesExplored');
+    if (totalTrips) totalTrips.textContent = trips.length;
+    if (cityCount) {
+      const uniqueCities = new Set(trips.flatMap(trip => trip.stops.map(cleanStopName)));
+      cityCount.textContent = uniqueCities.size;
+    }
+  }
+
+  function renderMyTrips() {
+    const list = document.getElementById('tripsList');
+    if (!list) return;
+    list.innerHTML = '';
+    trips.forEach(trip => list.appendChild(buildTripCard(trip, true)));
+  }
+
+  function renderItinerary() {
+    const trip = getCurrentTrip();
+    const title = document.getElementById('itineraryTitle');
+    const subtitle = document.getElementById('itinerarySubtitle');
+    const stopList = document.getElementById('stopList');
+    const timeline = document.getElementById('itineraryTimeline');
+    const activityList = document.querySelector('.activity-list');
+    const itineraryCardStop = document.getElementById('itineraryCardStop');
+    const itineraryCardStopLabel = document.getElementById('itineraryCardStopLabel');
+    if (!trip.stops.includes(selectedStop)) selectedStop = trip.stops[0] || '';
+    if (title) title.textContent = trip.name;
+    if (subtitle) subtitle.textContent = `${trip.dateLabel} · ${trip.stops.length} stops · ${trip.nights} nights`;
+    const stopNights = trip.stops.length ? Math.max(1, Math.round(trip.nights / trip.stops.length)) : 1;
+    if (stopList) {
+      stopList.innerHTML = '';
+      trip.stops.forEach((stop, index) => {
+        const item = document.createElement('div');
+        item.className = 'stop-item' + (stop === selectedStop ? ' active' : '');
+        item.onclick = () => {
+          selectedStop = stop;
+          selectStop(item);
+          renderItinerary();
+        };
+        item.innerHTML = `
+          <div class="stop-num">${index + 1}</div>
+          <div class="stop-info">
+            <h5>${stop}</h5>
+            <p>${trip.dateLabel} · ${stopNights} nights</p>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();removeStop('${stop}')">🗑</button>
+        `;
+        stopList.appendChild(item);
+      });
+    }
+    if (itineraryCardStop) itineraryCardStop.textContent = selectedStop;
+    if (itineraryCardStopLabel) itineraryCardStopLabel.textContent = `${trip.dateLabel} · ${stopNights} nights`;
+    if (timeline) {
+      timeline.innerHTML = '';
+      trip.stops.forEach(stop => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        const activities = trip.activities[stop] || [];
+        const activityText = activities.length ? activities.map(a => a.name).join(' · ') : 'Explore top sights and local favorites.';
+        item.innerHTML = `
+          <div class="timeline-city">${stop}</div>
+          <div class="timeline-act">${trip.dateLabel}</div>
+          <div class="timeline-act" style="margin-top:6px">${activityText}</div>
+        `;
+        timeline.appendChild(item);
+      });
+    }
+    if (activityList) {
+      activityList.innerHTML = '';
+      const activities = trip.activities[selectedStop] || [];
+      activities.forEach(activity => {
+        const item = document.createElement('div');
+        item.className = 'activity-item';
+        item.innerHTML = `
+          <span class="time">${activity.time}</span>
+          <span class="name">${activity.name}</span>
+          <span class="cost">₹${activity.cost.toLocaleString()}</span>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();editActivity('${selectedStop}', '${activity.name}')">✏️</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();removeActivity('${selectedStop}', '${activity.name}')">🗑</button>
+        `;
+        activityList.appendChild(item);
+      });
+      // Update day total
+      const total = activities.reduce((sum, a) => sum + a.cost, 0);
+      const dayTotal = activityList.parentElement.querySelector('.activity-list + hr + div span:last-child');
+      if (dayTotal) dayTotal.textContent = `₹${total.toLocaleString()}`;
+    }
+  }
+
+  function renderActivitySearch() {
+    const trip = getCurrentTrip();
+    if (!trip.stops.includes(selectedStop)) selectedStop = trip.stops[0] || '';
+    const title = document.getElementById('activitySearchTitle');
+    const activityContainer = document.getElementById('activityCardsContainer');
+    
+    if (title) title.textContent = `Activities in ${selectedStop}`;
+    
+    if (activityContainer) {
+      activityContainer.innerHTML = '';
+      const activities = availableActivities[selectedStop] || [];
+      
+      activities.forEach(activity => {
+        const card = document.createElement('div');
+        card.className = 'card card-sm';
+        card.style.display = 'flex';
+        card.style.alignItems = 'center';
+        card.style.gap = '16px';
+        
+        card.innerHTML = `
+          <div style="width:60px;height:60px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${activity.icon}</div>
+          <div style="flex:1">
+            <h4 style="font-size:15px;margin-bottom:2px">${activity.name}</h4>
+            <p style="font-size:12px;color:var(--text-muted)">${activity.category} · ${activity.duration} · ⭐ ${activity.rating}</p>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:16px;font-weight:600;color:var(--teal-dark)">₹${activity.cost.toLocaleString()}</div>
+            <button class="btn btn-primary btn-sm" onclick="addActivity('${activity.name}', ${activity.cost})">+ Add</button>
+          </div>
+        `;
+        
+        activityContainer.appendChild(card);
+      });
+    }
+  }
+
+  function renderScreen(screen) {
+    if (screen === 'dashboard') renderDashboard();
+    if (screen === 'my-trips') renderMyTrips();
+    if (screen === 'itinerary') {
+      renderItinerary();
+      renderItineraryView();
+    }
+    if (screen === 'city-search') renderCityGrid();
+    if (screen === 'activity-search') renderActivitySearch();
+    if (screen === 'shared') renderShared();
+    if (screen === 'notes') updateTripOptions();
+  }
+
+  function renderShared() {
+    const trip = getCurrentTrip();
+    const title = document.getElementById('sharedTitle');
+    const timeline = document.getElementById('sharedTimeline');
+    const sharedDate = document.getElementById('sharedDate');
+    const sharedCities = document.getElementById('sharedCities');
+    const sharedNights = document.getElementById('sharedNights');
+    const sharedCost = document.getElementById('sharedCost');
+    if (title) title.textContent = trip.name;
+    if (sharedDate) sharedDate.textContent = `📅 ${trip.dateLabel}`;
+    if (sharedCities) sharedCities.textContent = `🏙 ${trip.stops.length} cities`;
+    if (sharedNights) sharedNights.textContent = `🌙 ${trip.nights} nights`;
+    if (sharedCost) sharedCost.textContent = `💰 ~₹${trip.cost.toLocaleString()}`;
+    if (timeline) {
+      timeline.innerHTML = '';
+      trip.stops.forEach(stop => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        const activities = trip.activities[stop] || [];
+        const activityText = activities.length ? activities.map(a => a.name).join(' · ') : 'Explore top sights and local favorites.';
+        item.innerHTML = `
+          <div class="timeline-city">${stop}</div>
+          <div class="timeline-act">${trip.dateLabel}</div>
+          <div class="timeline-act" style="margin-top:6px">${activityText}</div>
+        `;
+        timeline.appendChild(item);
+      });
+    }
+  }
+
+  function updateTripOptions() {
+    const select = document.getElementById('noteTrip');
+    if (!select) return;
+    select.innerHTML = '';
+    trips.forEach(trip => {
+      const option = document.createElement('option');
+      option.value = trip.name;
+      option.textContent = trip.name;
+      select.appendChild(option);
+    });
+  }
+
+  // ─── CREATE TRIP ───────────────────────────────────
+  function formatMonthDay(date) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}`;
+  }
+
+  function createTrip() {
+    const name = document.getElementById('newTripName').value.trim();
+    const startValue = document.getElementById('newTripStart').value;
+    const endValue = document.getElementById('newTripEnd').value;
+    const description = document.getElementById('newTripDesc').value.trim();
+    if (!name) return showToast('⚠️ Trip name is required');
+    if (!startValue || !endValue) return showToast('⚠️ Start and end dates are required');
+    const startDate = new Date(startValue);
+    const endDate = new Date(endValue);
+    if (startDate > endDate) return showToast('⚠️ End date must be after start date');
+    const nights = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000));
+    const newTrip = {
+      id: 'trip-' + Date.now(),
+      name,
+      start: startValue || '',
+      end: endValue || '',
+      dateLabel: startValue && endValue ? `${formatMonthDay(startDate)}–${formatMonthDay(endDate)}` : 'Dates TBD',
+      status: 'Upcoming',
+      badgeClass: 'badge-green',
+      cost: 0,
+      nights,
+      stops: [],
+      activities: {},
+      description,
+    };
+    trips.unshift(newTrip);
+    activeTripId = newTrip.id;
+    closeModal('createTripModal');
+    renderDashboard();
+    renderMyTrips();
+    renderItinerary();
+    showToast('✅ Trip "' + name + '" created!');
+    setTimeout(() => goTo('itinerary'), 500);
+  }
+
+  // ─── ADD NOTE ─────────────────────────────────────
+  function addNote() {
+    const title = document.getElementById('noteTitle').value.trim();
+    const body = document.getElementById('noteBody').value.trim();
+    const trip = document.getElementById('noteTrip').value;
+    if (!title) return showToast('⚠️ Note title cannot be empty');
+    if (!body) return showToast('⚠️ Note body cannot be empty');
+    const el = document.createElement('div');
+    el.className = 'note-card';
+    el.onclick = () => showToast('Note opened');
+    el.innerHTML = `<h5>📝 ${title}</h5><p>${body}</p><div class="note-meta">${trip} · Just now</div>`;
+    document.getElementById('notesList').prepend(el);
+    closeModal('addNoteModal');
+    showToast('✅ Note saved!');
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteBody').value = '';
+  }
+
+  // ─── CHIPS ─────────────────────────────────────────
+  function chipToggle(el) {
+    el.closest('.chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ─── ITINERARY TABS ────────────────────────────────
+  function switchTab(btn, tab) {
+    btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-builder').style.display = tab === 'builder' ? 'block' : 'none';
+    document.getElementById('tab-view').style.display = tab === 'view' ? 'block' : 'none';
+    if (tab === 'view') renderItineraryView();
+  }
+
+  function setItineraryView(mode) {
+    itineraryViewMode = mode;
+    document.querySelectorAll('#tab-view .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#tab-view .tab-btn').forEach(btn => {
+      if (btn.textContent.trim().toLowerCase() === mode) btn.classList.add('active');
+    });
+    const buttons = document.querySelectorAll('#tab-view .tab-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.trim().toLowerCase() === mode) btn.classList.add('active');
+    });
+    renderItineraryView();
+  }
+
+  function selectStop(el) {
+    document.querySelectorAll('.stop-item').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function renderItineraryView() {
+    const trip = getCurrentTrip();
+    const container = document.getElementById('itineraryViewContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    const startDate = trip.start ? new Date(trip.start) : null;
+
+    const formatDate = date => {
+      if (!date || Number.isNaN(date.getTime())) return 'TBD';
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    const addDays = (date, days) => {
+      const next = new Date(date.valueOf());
+      next.setDate(next.getDate() + days);
+      return next;
+    };
+
+    if (itineraryViewMode === 'timeline') {
+      trip.stops.forEach((stop, index) => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        const activities = trip.activities[stop] || [];
+        const activityText = activities.length ? activities.map(a => a.name).join(' · ') : 'Add activities for this city.';
+        const dateLabel = startDate ? `${formatDate(addDays(startDate, index * Math.max(1, Math.round(trip.nights / Math.max(1, trip.stops.length)))))} · ${stop}` : stop;
+        item.innerHTML = `
+          <div class="timeline-city">${stop}</div>
+          <div class="timeline-act">${dateLabel}</div>
+          <div class="timeline-act" style="margin-top:6px">${activityText}</div>
+        `;
+        container.appendChild(item);
+      });
+      return;
+    }
+
+    if (itineraryViewMode === 'calendar') {
+      trip.stops.forEach((stop, index) => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        const stopStart = startDate ? addDays(startDate, index * Math.max(1, Math.round(trip.nights / Math.max(1, trip.stops.length)))) : null;
+        const stopEnd = stopStart ? addDays(stopStart, Math.max(1, Math.round(trip.nights / Math.max(1, trip.stops.length))) - 1) : null;
+        const activities = trip.activities[stop] || [];
+        item.innerHTML = `
+          <div class="timeline-city">${stop}</div>
+          <div class="timeline-act">${formatDate(stopStart)} – ${formatDate(stopEnd)}</div>
+          <div class="timeline-act" style="margin-top:10px">${activities.length ? activities.map(a => `• ${a.time} ${a.name}`).join('<br>') : 'No activities yet. Add items from builder.'}</div>
+        `;
+        container.appendChild(item);
+      });
+      return;
+    }
+
+    if (itineraryViewMode === 'list') {
+      trip.stops.forEach((stop, index) => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        const stopStart = startDate ? addDays(startDate, index * Math.max(1, Math.round(trip.nights / Math.max(1, trip.stops.length)))) : null;
+        const activities = trip.activities[stop] || [];
+        item.innerHTML = `
+          <div class="timeline-city">${stop}</div>
+          <div class="timeline-act">Date: ${formatDate(stopStart)}</div>
+          <div class="timeline-act" style="margin-top:10px">${activities.length ? activities.map(a => `• ${a.time} — ${a.name}`).join('<br>') : 'No activities scheduled yet.'}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+  }
+
+  function selectCityRegion(el, region) {
+    document.querySelectorAll('#regionChips .chip').forEach(chip => chip.classList.remove('active'));
+    el.classList.add('active');
+    activeCityRegion = region;
+    renderCityGrid();
+  }
+
+  function renderCityGrid() {
+    const grid = document.getElementById('cityGrid');
+    if (!grid) return;
+    const query = citySearchQuery.trim().toLowerCase();
+    const cities = cityList
+      .filter(city => activeCityRegion === 'All regions' || city.region === activeCityRegion)
+      .filter(city => city.name.toLowerCase().includes(query) || city.country.toLowerCase().includes(query) || city.note.toLowerCase().includes(query));
+
+    grid.innerHTML = '';
+    if (!cities.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--text-muted);border:1px solid var(--border);border-radius:var(--radius);background:var(--white);">No cities match this region or search. Try another region or keyword.</div>';
+      return;
+    }
+
+    cities.sort((a, b) => a.name.localeCompare(b.name));
+    cities.forEach(city => {
+      const row = document.createElement('div');
+      row.className = 'city-row';
+      row.onclick = () => addCity(`${city.name} ${city.flag}`);
+      row.innerHTML = `
+        <span class="city-flag">${city.flag}</span>
+        <div class="city-info">
+          <h5>${city.name}</h5>
+          <p>${city.country} · ${city.note}</p>
+        </div>
+        <span class="city-cost">${city.cost}</span>
+        <button class="btn btn-primary btn-sm" style="margin-left:8px" onclick="event.stopPropagation(); addCity('${city.name} ${city.flag}')">+ Add</button>
+      `;
+      grid.appendChild(row);
+    });
+  }
+
+  function filterCities(val) {
+    citySearchQuery = val;
+    renderCityGrid();
+  }
+
+  function addCity(name) {
+    const trip = getCurrentTrip();
+    if (!trip.stops.includes(name)) {
+      trip.stops.push(name);
+      trip.activities[name] = [];
+      selectedStop = name;
+      showToast('✅ ' + name + ' added to trip!');
+      renderDashboard();
+      renderMyTrips();
+      renderItinerary();
+      setTimeout(() => goTo('itinerary'), 600);
+    } else {
+      showToast('ℹ️ ' + name + ' is already in your trip');
+    }
+  }
+
+  function addActivity(name, cost) {
+    const trip = getCurrentTrip();
+    if (!selectedStop) return showToast('⚠️ Select a stop first.');
+    if (!trip.activities[selectedStop]) trip.activities[selectedStop] = [];
+    const time = prompt('Enter time (e.g., 10:00):') || '10:00';
+    if (!time.trim()) return showToast('⚠️ Invalid time.');
+    trip.activities[selectedStop].push({ time: time.trim(), name, cost });
+    showToast('✅ Activity added!');
+    renderItinerary();
+    renderItineraryView();
+  }
+
+  function editActivity(stop, name) {
+    const trip = getCurrentTrip();
+    const activities = trip.activities[stop] || [];
+    const activity = activities.find(a => a.name === name);
+    if (!activity) return showToast('⚠️ Activity not found.');
+    const newName = prompt('Update activity name:', activity.name);
+    const newTime = prompt('Update time:', activity.time);
+    if (!newName || !newTime) return showToast('⚠️ Edit cancelled.');
+    activity.name = newName.trim() || activity.name;
+    activity.time = newTime.trim() || activity.time;
+    showToast('✏️ Activity updated');
+    renderItinerary();
+    renderItineraryView();
+  }
+
+  function removeActivity(stop, name) {
+    const trip = getCurrentTrip();
+    if (trip.activities[stop]) {
+      trip.activities[stop] = trip.activities[stop].filter(a => a.name !== name);
+    }
+    showToast('🗑 Activity removed');
+    renderItinerary();
+    renderItineraryView();
+  }
+
+  function removeStop(stop) {
+    const trip = getCurrentTrip();
+    trip.stops = trip.stops.filter(item => item !== stop);
+    delete trip.activities[stop];
+    if (selectedStop === stop) selectedStop = trip.stops[0] || '';
+    showToast(`🗑 ${stop} removed from trip`);
+    renderDashboard();
+    renderMyTrips();
+    renderItinerary();
+    renderItineraryView();
+  }
+
+  // ─── CHECKLIST ─────────────────────────────────────
+  function updateProgress() {
+    const all = document.querySelectorAll('#screen-checklist input[type="checkbox"]');
+    const checked = document.querySelectorAll('#screen-checklist input[type="checkbox"]:checked');
+    const pct = Math.round((checked.length / all.length) * 100);
+    document.getElementById('packProgress').textContent = checked.length + ' / ' + all.length;
+    document.getElementById('packBar').style.width = pct + '%';
+    all.forEach(cb => {
+      cb.closest('.check-item').classList.toggle('checked', cb.checked);
+    });
+  }
+
+  function resetChecklist() {
+    document.querySelectorAll('#screen-checklist input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+    updateProgress();
+    showToast('↺ Checklist reset');
+  }
+
+  function addCheckItem() {
+    const name = prompt('Add packing item:');
+    if (!name) return;
+    const el = document.createElement('div');
+    el.className = 'check-item';
+    el.innerHTML = `<input type="checkbox" onchange="updateProgress()"><span class="item-name">${name}</span>`;
+    document.querySelector('#clothingList').appendChild(el);
+    updateProgress();
+    showToast('✅ Item added!');
+  }
+
+  // ─── INIT ──────────────────────────────────────────
+  goTo('login');
+</script>
+</body>
+</html>
