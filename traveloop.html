@@ -708,7 +708,7 @@
         <div style="text-align:right; margin-bottom:20px; margin-top:-8px;">
           <a class="link" style="font-size:13px" href="#">Forgot password?</a>
         </div>
-        <button class="btn btn-primary btn-full" onclick="goTo('dashboard')">Sign in</button>
+        <button class="btn btn-primary btn-full" onclick="login()">Sign in</button>
         <div class="divider"><span>or</span></div>
         <button class="btn btn-outline btn-full" onclick="goTo('dashboard')">🌐 Continue with Google</button>
         <div class="auth-switch">
@@ -741,13 +741,13 @@
         </div>
         <div class="form-group">
           <label>Email address</label>
-          <input type="email" placeholder="your@email.com">
+          <input type="email" id="signupEmail" placeholder="your@email.com">
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" placeholder="Create a strong password">
+          <input type="password" id="signupPass" placeholder="Create a strong password">
         </div>
-        <button class="btn btn-primary btn-full" onclick="goTo('dashboard')">Create account</button>
+        <button class="btn btn-primary btn-full" onclick="signup()">Create account</button>
         <div class="auth-switch">Already have an account? <a class="link" onclick="goTo('login')">Sign in</a></div>
       </div>
     </div>
@@ -770,7 +770,14 @@
       <div class="nav-link" onclick="goTo('admin')">Admin</div>
     </div>
     <div class="nav-right">
+      <select id="currencySelect" onchange="changeCurrency(this.value)" style="margin-right:8px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--white);font-size:13px;">
+        <option value="INR">INR ₹</option>
+        <option value="USD">USD $</option>
+        <option value="EUR">EUR €</option>
+        <option value="AED">AED د.إ</option>
+      </select>
       <button class="btn btn-primary btn-sm" onclick="openModal('createTripModal')">+ New Trip</button>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
       <div class="avatar" onclick="goTo('profile')">AS</div>
     </div>
   </nav>
@@ -1027,6 +1034,14 @@
   </nav>
   <div class="page-content">
     <div class="page-header"><h2>Trip Budget</h2><p>South India Adventure · Aug 14–28</p></div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="section-title mb-16">Set Your Budget</div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <input type="number" id="budgetInput" value="25000" placeholder="Enter budget amount" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;">
+        <button class="btn btn-primary" onclick="setCustomBudget()">Set Budget</button>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Enter your total trip budget in the selected currency.</p>
+    </div>
     <div class="budget-grid">
       <div class="card">
         <div class="section-title mb-16">Budget overview</div>
@@ -1708,8 +1723,12 @@
   let activeTripId = trips[0]?.id || null;
   let selectedStop = 'Chennai 🇮🇳';
   let itineraryViewMode = 'timeline';
-  let activeCityRegion = 'All regions';
+  let activeCityRegion = 'Asia'; // Default to Asia for Indian places
   let citySearchQuery = '';
+  let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  let currentUser = localStorage.getItem('currentUser') || null;
+  let selectedCurrency = localStorage.getItem('selectedCurrency') || 'INR';
+  let customBudget = localStorage.getItem('customBudget') ? parseInt(localStorage.getItem('customBudget')) : 25000; // Default realistic budget
 
   const cityList = [
     { name: 'Chennai', region: 'Asia', country: 'India', note: 'Tamil Nadu · Very popular', flag: '🇮🇳', cost: '₹' },
@@ -1736,6 +1755,83 @@
 
   function getCurrentTrip() {
     return trips.find(t => t.id === activeTripId) || trips[0];
+  }
+
+  // ─── AUTHENTICATION ───────────────────────────────────
+  function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+    if (!email || !pass) {
+      showToast('⚠️ Email and password are required');
+      return;
+    }
+    // Simple mock validation
+    if (email === 'traveler@example.com' && pass === 'password') {
+      isLoggedIn = true;
+      currentUser = email;
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUser', email);
+      showToast('✅ Logged in successfully!');
+      goTo('dashboard');
+    } else {
+      showToast('⚠️ Invalid email or password');
+    }
+  }
+
+  function signup() {
+    const email = document.getElementById('signupEmail').value.trim();
+    const pass = document.getElementById('signupPass').value.trim();
+    if (!email || !pass) {
+      showToast('⚠️ Email and password are required');
+      return;
+    }
+    // Mock signup
+    isLoggedIn = true;
+    currentUser = email;
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('currentUser', email);
+    showToast('✅ Account created successfully!');
+    goTo('dashboard');
+  }
+
+  function logout() {
+    isLoggedIn = false;
+    currentUser = null;
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    showToast('👋 Logged out');
+    goTo('login');
+  }
+
+  // ─── CURRENCY & BUDGET ─────────────────────────────────
+  const currencyRates = { INR: 1, USD: 0.012, EUR: 0.011, AED: 0.044 }; // Approximate rates
+  const currencySymbols = { INR: '₹', USD: '$', EUR: '€', AED: 'د.إ' };
+
+  function changeCurrency(currency) {
+    selectedCurrency = currency;
+    localStorage.setItem('selectedCurrency', currency);
+    renderBudget();
+    showToast(`Currency changed to ${currency}`);
+  }
+
+  function setCustomBudget() {
+    const amount = parseInt(document.getElementById('budgetInput').value);
+    if (amount > 0) {
+      customBudget = amount;
+      localStorage.setItem('customBudget', amount.toString());
+      renderBudget();
+      showToast('✅ Budget updated');
+    } else {
+      showToast('⚠️ Enter a valid budget amount');
+    }
+  }
+
+  function convertAmount(amount) {
+    return Math.round(amount * currencyRates[selectedCurrency]);
+  }
+
+  function formatCurrency(amount) {
+    return `${currencySymbols[selectedCurrency]}${convertAmount(amount).toLocaleString()}`;
   }
 
   function cleanStopName(stop) {
@@ -1924,6 +2020,7 @@
     }
     if (screen === 'city-search') renderCityGrid();
     if (screen === 'activity-search') renderActivitySearch();
+    if (screen === 'budget') renderBudget();
     if (screen === 'shared') renderShared();
     if (screen === 'notes') updateTripOptions();
   }
@@ -2268,7 +2365,84 @@
     showToast('✅ Item added!');
   }
 
+  function renderBudget() {
+    const budgetInput = document.getElementById('budgetInput');
+    if (budgetInput) budgetInput.value = customBudget;
+
+    // Sample budget breakdown (in INR)
+    const budgetData = {
+      total: customBudget,
+      spent: 25000, // This would be calculated from actual trip data
+      categories: {
+        transport: 9800,
+        stay: 3600,
+        activities: 2100,
+        meals: 8500
+      },
+      breakdown: [
+        { label: '✈️ Flights', amount: 7800 },
+        { label: '🚌 Local transport', amount: 2000 },
+        { label: '🏨 Accommodation', amount: 3600 },
+        { label: '🎫 Activities', amount: 2100 },
+        { label: '🍽️ Meals', amount: 8500 }
+      ],
+      perDay: [
+        { city: 'Chennai (Aug 14–17)', amount: 2800, percent: 65 },
+        { city: 'Bangalore (Aug 17–20)', amount: 2100, percent: 48 },
+        { city: 'Hyderabad (Aug 20–24)', amount: 3800, percent: 88 },
+        { city: 'Mumbai (Aug 24–28)', amount: 3200, percent: 74 }
+      ]
+    };
+
+    // Update main budget display
+    const mainAmount = document.querySelector('.budget-grid .card:first-child div[style*="font-size:28px"]');
+    const totalBudget = document.querySelector('.budget-grid .card:first-child div[style*="of ₹30,000"]');
+    if (mainAmount) mainAmount.textContent = formatCurrency(budgetData.spent);
+    if (totalBudget) totalBudget.textContent = `of ${formatCurrency(budgetData.total)} total budget`;
+
+    // Update category breakdown
+    const categoryItems = document.querySelectorAll('.budget-grid .card:first-child div[style*="display:flex;flex-direction:column"] > div');
+    const categories = ['transport', 'stay', 'activities', 'meals'];
+    categoryItems.forEach((item, index) => {
+      const amountSpan = item.querySelector('span:last-child');
+      if (amountSpan && categories[index]) {
+        amountSpan.textContent = formatCurrency(budgetData.categories[categories[index]]);
+      }
+    });
+
+    // Update detailed breakdown
+    const breakdownRows = document.querySelectorAll('.budget-grid .card:nth-child(2) .budget-row');
+    breakdownRows.forEach((row, index) => {
+      const amountSpan = row.querySelector('.budget-amount');
+      if (amountSpan && budgetData.breakdown[index]) {
+        amountSpan.textContent = formatCurrency(budgetData.breakdown[index].amount);
+      }
+    });
+
+    // Update total estimated
+    const totalEstimated = document.querySelector('.budget-row[style*="border-bottom:none"] span:last-child');
+    if (totalEstimated) totalEstimated.textContent = formatCurrency(budgetData.spent);
+
+    // Update per-day breakdown
+    const perDayItems = document.querySelectorAll('.card[style*="margin-top:20px"] > div[style*="display:flex;flex-direction:column"] > div');
+    perDayItems.forEach((item, index) => {
+      const amountSpan = item.querySelector('span[style*="font-weight:600"]');
+      const progressFill = item.querySelector('.progress-fill');
+      if (amountSpan && budgetData.perDay[index]) {
+        amountSpan.innerHTML = `${formatCurrency(budgetData.perDay[index].amount)}${index === 2 ? ' <span style="color:var(--coral);font-size:11px">⚠️ over avg</span>' : ''}`;
+      }
+      if (progressFill && budgetData.perDay[index]) {
+        progressFill.style.width = `${budgetData.perDay[index].percent}%`;
+        progressFill.style.background = index === 2 ? 'var(--coral)' : 'var(--teal)';
+      }
+    });
+  }
+
   // ─── INIT ──────────────────────────────────────────
+  // Initialize currency and budget
+  const currencySelect = document.getElementById('currencySelect');
+  if (currencySelect) currencySelect.value = selectedCurrency;
+  
   goTo('login');
 </script>
 </body>
